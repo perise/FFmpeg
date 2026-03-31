@@ -144,12 +144,15 @@ ff_hyscale_fast_rvv:
 
     /*
      * Zero-extend gathered uint8 to int32 for arithmetic.
-     * vzext.vf4: widens each e8 element to e32 (4x width increase).
-     * e8mf4 → e32m1 (same number of elements = VL).
+     * vzext.vf4: widens each e8mf4 element to e32m1 (4x width increase).
+     *
+     * RVV 1.0 constraint: for widening ops, destination and source register
+     * groups MUST NOT overlap (spec §5.2).  Use v8/v9 as destinations so they
+     * are distinct from the source registers v4/v6.
      */
-    vsetvli zero, t1, e32, m1, ta, ma  /* back to e32m1 */
-    vzext.vf4 v4, v4                /* v4 = (uint32)src[xx[j]]   (e32m1) */
-    vzext.vf4 v6, v6                /* v6 = (uint32)src[xx[j]+1] (e32m1) */
+    vsetvli zero, t1, e32, m1, ta, ma  /* back to e32m1 — destination SEW */
+    vzext.vf4 v8, v4                /* v8 = (uint32)src[xx[j]]   (e32m1) */
+    vzext.vf4 v9, v6                /* v9 = (uint32)src[xx[j]+1] (e32m1) */
 
     /*
      * Bilinear blend:
@@ -158,10 +161,10 @@ ff_hyscale_fast_rvv:
      *
      * All in e32m1.
      */
-    vsub.vv v7, v6, v4              /* v7 = src1 - src0           (e32m1) */
+    vsub.vv v7, v9, v8              /* v7 = src1 - src0           (e32m1) */
     vmul.vv v7, v7, v3              /* v7 = diff * xalpha         (e32m1) */
-    vsll.vi v4, v4, 7               /* v4 = src0 << 7             (e32m1) */
-    vadd.vv v7, v4, v7              /* v7 = (src0<<7) + diff*alpha (e32m1) */
+    vsll.vi v8, v8, 7               /* v8 = src0 << 7             (e32m1) */
+    vadd.vv v7, v8, v7              /* v7 = (src0<<7) + diff*alpha (e32m1) */
 
     /*
      * Narrow int32 → int16 and store.
@@ -265,29 +268,31 @@ ff_hcscale_fast_rvv:
 
     /* === U plane === */
     vsetvli zero, t1, e8, mf4, ta, ma
-    vluxei32.v v4, (s3), v2         /* src1[xx]   → U */
-    vluxei32.v v6, (s3), v5         /* src1[xx+1] → U+1 */
+    vluxei32.v v4, (s3), v2         /* src1[xx]   → U (e8mf4) */
+    vluxei32.v v6, (s3), v5         /* src1[xx+1] → U+1 (e8mf4) */
 
+    /* Widen to e32m1; use v10/v11 to avoid same-register overlap (RVV §5.2) */
     vsetvli zero, t1, e32, m1, ta, ma
-    vzext.vf4 v4, v4
-    vzext.vf4 v6, v6
-    vsub.vv v7, v6, v4
+    vzext.vf4 v10, v4               /* v10 = (u32)U[xx]   */
+    vzext.vf4 v11, v6               /* v11 = (u32)U[xx+1] */
+    vsub.vv v7, v11, v10
     vmul.vv v7, v7, v3
-    vsll.vi v4, v4, 7
-    vadd.vv v8, v4, v7              /* U result */
+    vsll.vi v10, v10, 7
+    vadd.vv v8, v10, v7             /* v8 = U blend result */
 
     /* === V plane === */
     vsetvli zero, t1, e8, mf4, ta, ma
-    vluxei32.v v4, (s4), v2         /* src2[xx]   → V */
-    vluxei32.v v6, (s4), v5         /* src2[xx+1] → V+1 */
+    vluxei32.v v4, (s4), v2         /* src2[xx]   → V (e8mf4) */
+    vluxei32.v v6, (s4), v5         /* src2[xx+1] → V+1 (e8mf4) */
 
+    /* Widen to e32m1; reuse v10/v11 (U blend result already in v8) */
     vsetvli zero, t1, e32, m1, ta, ma
-    vzext.vf4 v4, v4
-    vzext.vf4 v6, v6
-    vsub.vv v7, v6, v4
+    vzext.vf4 v10, v4               /* v10 = (u32)V[xx]   */
+    vzext.vf4 v11, v6               /* v11 = (u32)V[xx+1] */
+    vsub.vv v7, v11, v10
     vmul.vv v7, v7, v3
-    vsll.vi v4, v4, 7
-    vadd.vv v9, v4, v7              /* V result */
+    vsll.vi v10, v10, 7
+    vadd.vv v9, v10, v7             /* v9 = V blend result */
 
     /* Narrow and store both planes */
     vsetvli zero, t1, e16, mf2, ta, ma
