@@ -885,6 +885,15 @@ extern const FFCodec ff_h264_oh_decoder;
 extern const FFCodec ff_h264_oh_encoder;
 extern const FFCodec ff_h264_omx_encoder;
 extern const FFCodec ff_h264_qsv_encoder;
+extern const FFCodec ff_h264_spacemit_mpp_encoder;
+extern const FFCodec ff_hevc_spacemit_mpp_encoder;
+extern const FFCodec ff_vp8_spacemit_mpp_encoder;
+extern const FFCodec ff_vp9_spacemit_mpp_encoder;
+/* SpacemiT K1 MPP hardware decoders */
+extern const FFCodec ff_h264_spacemit_mpp_decoder;
+extern const FFCodec ff_hevc_spacemit_mpp_decoder;
+extern const FFCodec ff_vp8_spacemit_mpp_decoder;
+extern const FFCodec ff_vp9_spacemit_mpp_decoder;
 extern const FFCodec ff_h264_v4l2m2m_encoder;
 extern const FFCodec ff_h264_vaapi_encoder;
 extern const FFCodec ff_h264_videotoolbox_encoder;

@@ -1438,3 +1438,13 @@ $(SUBDIR)pcm.o: $(SUBDIR)pcm_tables.h
 $(SUBDIR)qdm2.o: $(SUBDIR)qdm2_tables.h
 $(SUBDIR)sinewin.o: $(SUBDIR)sinewin_tables.h
 endif
+
+# SpacemiT K1 MPP encoders
+OBJS-$(CONFIG_H264_SPACEMIT_MPP_ENCODER)   += spacemitmppenc.o
+OBJS-$(CONFIG_HEVC_SPACEMIT_MPP_ENCODER)   += spacemitmppenc.o
+OBJS-$(CONFIG_VP8_SPACEMIT_MPP_ENCODER)    += spacemitmppenc.o
+OBJS-$(CONFIG_VP9_SPACEMIT_MPP_ENCODER)    += spacemitmppenc.o
+OBJS-$(CONFIG_H264_SPACEMIT_MPP_DECODER) += spacemitmppdec.o
+OBJS-$(CONFIG_HEVC_SPACEMIT_MPP_DECODER) += spacemitmppdec.o
+OBJS-$(CONFIG_VP8_SPACEMIT_MPP_DECODER)  += spacemitmppdec.o
+OBJS-$(CONFIG_VP9_SPACEMIT_MPP_DECODER)  += spacemitmppdec.o
