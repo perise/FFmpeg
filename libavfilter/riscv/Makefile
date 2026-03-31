@@ -7,3 +7,6 @@ SHLIBOBJS += riscv/cpu_common.o
 
 OBJS-$(CONFIG_OVERLAY_FILTER)                  += riscv/vf_overlay_init.o
 RVV-OBJS-$(CONFIG_OVERLAY_FILTER)              += riscv/vf_overlay_rvv.o
+
+OBJS-$(CONFIG_YADIF_FILTER)   += riscv/vf_yadif_init.o
+RVV-OBJS-$(CONFIG_YADIF_FILTER) += riscv/vf_yadif_rvv.o
