@@ -4,3 +4,6 @@ OBJS-$(CONFIG_BLACKDETECT_FILTER) += riscv/vf_blackdetect_init.o
 RVV-OBJS-$(CONFIG_BLACKDETECT_FILTER) += riscv/vf_blackdetect_rvv.o
 
 SHLIBOBJS += riscv/cpu_common.o
+
+OBJS-$(CONFIG_OVERLAY_FILTER)                  += riscv/vf_overlay_init.o
+RVV-OBJS-$(CONFIG_OVERLAY_FILTER)              += riscv/vf_overlay_rvv.o
