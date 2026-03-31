@@ -19,6 +19,7 @@
 #include "config.h"
 #include "libavutil/attributes.h"
 #include "libavutil/riscv/cpu.h"
+#include "libswscale/swscale.h"
 #include "libswscale/swscale_internal.h"
 
 void ff_range_lum_to_jpeg_16_rvv(int16_t *, int);
