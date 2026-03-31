@@ -119,6 +119,14 @@ av_cold void ff_sws_init_swscale_riscv(SwsInternal *c)
                     c->chrToYV12 = ff_rgb24ToUV_rvv;
                 break;
 
+            case AV_PIX_FMT_NV12:
+                c->chrToYV12 = ff_nv12ToUV_rvv;
+                break;
+
+            case AV_PIX_FMT_NV21:
+                c->chrToYV12 = ff_nv21ToUV_rvv;
+                break;
+
             case AV_PIX_FMT_RGBA:
                 c->lumToYV12 = ff_rgba32ToY_rvv;
                 if (c->chrSrcHSubSample)
