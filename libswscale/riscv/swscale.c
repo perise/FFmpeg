@@ -137,4 +137,13 @@ av_cold void ff_sws_init_swscale_riscv(SwsInternal *c)
         }
     }
 #endif
+#if HAVE_RVV
+    /* Full horizontal scaler: hyScale / hcScale (8-bit src, dstBpc <= 14).
+     * Handles any filterSize (aligned to 4 as guaranteed by FFmpeg).
+     * No filterSize % 8 constraint needed thanks to VL-based RVV loop. */
+    if ((flags & AV_CPU_FLAG_RVV_I32) && (flags & AV_CPU_FLAG_RVB) &&
+        c->srcBpc == 8 && c->dstBpc <= 14) {
+        c->hyScale = c->hcScale = ff_hscale8to15_rvv;
+    }
+#endif
 }

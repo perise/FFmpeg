@@ -5,6 +5,7 @@ RVV-OBJS += riscv/input_rvv.o \
             riscv/output_rvv.o \
             riscv/range_rvv.o \
             riscv/rgb2rgb_rvv.o \
-            riscv/hyscale_fast_rvv.o
+            riscv/hyscale_fast_rvv.o \
+            riscv/hscale_rvv.o
 
 SHLIBOBJS += riscv/cpu_common.o
