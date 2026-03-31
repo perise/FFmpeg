@@ -1,18 +1,37 @@
 diff a/libswscale/riscv/swscale.c b/libswscale/riscv/swscale.c	(rejected hunks)
-@@ -66,6 +66,16 @@ RVV_INPUT(bgra32);
- RVV_INPUT(rgb24);
- RVV_INPUT(rgba32);
+@@ -77,6 +77,13 @@ void ff_nv21ToUV_rvv(uint8_t *dstU, uint8_t *dstV,
  
-+void ff_nv12ToUV_rvv(uint8_t *dstU, uint8_t *dstV,
-+                      const uint8_t *unused0, const uint8_t *src,
-+                      const uint8_t *unused2, int width,
-+                      uint32_t *pal, void *opq);
-+void ff_nv21ToUV_rvv(uint8_t *dstU, uint8_t *dstV,
-+                      const uint8_t *unused0, const uint8_t *src,
-+                      const uint8_t *unused2, int width,
-+                      uint32_t *pal, void *opq);
-+
-+
  
+ 
++/* RVV vertical output kernels - implemented in output_rvv.S */
++void ff_yuv2plane1_8_rvv(const int16_t *src, uint8_t *dest, int dstW,
++                          const uint8_t *dither, int offset);
++void ff_yuv2planeX_8_rvv(const int16_t *filter, int filterSize,
++                          const int16_t **src, uint8_t *dest, int dstW,
++                          const uint8_t *dither, int offset);
++
  /* RVV fast bilinear hscale - implemented in hyscale_fast_rvv.S */
  void ff_hyscale_fast_rvv(struct SwsContext *c, int16_t *dst, int dstWidth,
+                           const uint8_t *src, int srcW, int xInc);
+@@ -158,5 +165,20 @@ av_cold void ff_sws_init_swscale_riscv(SwsContext *c)
+             c->hcscale_fast = ff_hcscale_fast_rvv;
+     }
+ #endif
+-        ff_sws_init_range_convert_riscv(c, flags);
++    #if HAVE_RVV
++    /* Vertical output kernels for 8-bit planar output (bilinear/bicubic vertical stage).
++     * Override yuv2plane1 / yuv2planeX only when:
++     *  - RVV 32-bit integer ops are available
++     *  - Output is 8-bit per component (dstBpc==8)
++     *  - The function pointer is non-NULL (i.e. output is planar YUV, not packed)
++     */
++    if ((flags & AV_CPU_FLAG_RVV_I32) && (flags & AV_CPU_FLAG_RVB) &&
++        c->dstBpc == 8) {
++        if (c->yuv2plane1)
++            c->yuv2plane1 = (yuv2planar1_fn)ff_yuv2plane1_8_rvv;
++        if (c->yuv2planeX)
++            c->yuv2planeX = (yuv2planarX_fn)ff_yuv2planeX_8_rvv;
++    }
++#endif
++    ff_sws_init_range_convert_riscv(c, flags);
+ }
