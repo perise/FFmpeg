@@ -10,3 +10,6 @@ RVV-OBJS-$(CONFIG_OVERLAY_FILTER)              += riscv/vf_overlay_rvv.o
 
 OBJS-$(CONFIG_YADIF_FILTER)   += riscv/vf_yadif_init.o
 RVV-OBJS-$(CONFIG_YADIF_FILTER) += riscv/vf_yadif_rvv.o
+
+OBJS-$(CONFIG_NLMEANS_FILTER)     += riscv/vf_nlmeans_init_riscv.o
+RVV-OBJS-$(CONFIG_NLMEANS_FILTER) += riscv/vf_nlmeans_rvv.o
