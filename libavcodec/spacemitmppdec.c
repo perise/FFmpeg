@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 /*
  * spacemitmppdec.c — SpacemiT K1 MPP hardware decoder (FFmpeg codec plugin)
  *
@@ -72,6 +73,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/mem.h"
 #include "libavutil/imgutils.h"
+#include "k1_mpp_scheduler.h"
 #include "libavutil/frame.h"
 
 #pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
@@ -139,6 +141,9 @@ typedef struct SpacemitMppDecContext {
 
     /* ── PTS queue (maps OUTPUT buf index → pts) ── */
     int64_t       pts_queue[SPACEMIT_DEC_OUTPUT_BUFS * 2];
+
+    /* K1 cluster scheduler slot (NULL if >8 streams) */
+    K1StreamSlot *sched_slot;
 
 } SpacemitMppDecContext;
 
@@ -412,6 +417,8 @@ static av_cold int spacemit_mpp_decode_init(AVCodecContext *avctx)
     int ret;
 
     s->fd          = -1;
+    s->sched_slot = k1_sched_acquire();
+    k1_sched_pin(s->sched_slot);
     s->v4l2_codec  = avcodec_to_v4l2_codec(avctx->codec_id);
     s->num_out_bufs = s->num_out_bufs > 0 ? s->num_out_bufs : SPACEMIT_DEC_OUTPUT_BUFS;
     s->num_cap_bufs = s->num_cap_bufs > 0 ? s->num_cap_bufs : SPACEMIT_DEC_CAPTURE_BUFS;
@@ -687,6 +694,7 @@ static void spacemit_mpp_decode_flush(AVCodecContext *avctx)
 static av_cold int spacemit_mpp_decode_close(AVCodecContext *avctx)
 {
     SpacemitMppDecContext *s = avctx->priv_data;
+    k1_sched_release(s->sched_slot); s->sched_slot = NULL;
     stream_off_dec(s);
     free_dec_buffers(s->out_bufs, s->n_out); s->out_bufs = NULL;
     free_dec_buffers(s->cap_bufs, s->n_cap); s->cap_bufs = NULL;
