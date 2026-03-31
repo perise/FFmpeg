@@ -1,0 +1,31 @@
+=== K1 RVV Quick Benchmark ===
+Date: 2026年 03月 30日 星期一 21:19:25 BST
+Res: 320x240  frames=30
+
+--- Direction 7: NLMeans ---
+  nlmeans RVV                                   14640 ms  speed=0.138x
+  nlmeans C (cpuflags=0)                        15921 ms  speed=0.126x
+
+--- Direction 9: Image copy ---
+  imgcopy RVV                                     155 ms  speed=33.7x
+  imgcopy C (cpuflags=0)                          178 ms  speed=24.7x
+
+--- Direction 6: Yadif ---
+  yadif RVV                                       158 ms  speed=32.8x
+  yadif C (cpuflags=0)                            193 ms  speed=20.1x
+
+=== Done ===
+cat: /mnt/sdcard/quickbench.txt: 输入文件是输出文件
+ Done ===
+
+--- Speedup Summary (C elapsed / RVV elapsed) ---
+  nlmeans:   15921 / 14640 = 1.088x (+8.8%)
+  imgcopy:   178   / 155   = 1.148x (+14.8%)
+  yadif:     193   / 158   = 1.221x (+22.1%)
+
+Notes:
+  - 320x240 @ 15fps, 30 frames per test, single-threaded
+  - nlmeans: modest gain due to scalar carry prefix-sum bottleneck
+  - yadif/imgcopy: e32m4/e8m8 fully vectorized paths show clear wins
+  - scale filter excluded (pre-existing swscale RVV register-alignment bug)
+  - K1: rv64gcv_zve32f, VLEN=256, 8x X60 cores
